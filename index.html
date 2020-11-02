@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Demo</title>
+    <title>ScriptDude</title>
     <link rel="stylesheet" href="https://unpkg.com/mvp.css">
     <style>
         :root {
@@ -19,6 +19,7 @@
             --color-text-secondary: #999;
         }
     </style>
+    <script src="web-script.js"></script>
 </head>
 <body>
     <header id="home">
@@ -28,19 +29,29 @@
                 <br>ScriptDude
             </a>
             <ul>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#installation">Installation</a></li>
-                <li><a href="#faq">FAQ</a></li>
+                <li><a href="/#home">Home</a></li>
+                <li><a href="/#installation">Installation</a></li>
+                <li><a href="/#faq">FAQ</a></li>
+                <li><a href="/#generator">Link Generator</a></li>
                 <li><a href="https://www.github.com/kevinkub/scriptdu.de/" target="_blank">GitHub ↗</a></li>
             </ul>
         </nav>
-        <h1>An <u>automatic</u> downloader and updater for Scriptable scripts</h1>
+    </header>
+    <header x-hide-install>
+    <h1>An <u>automatic</u> downloader and updater for Scriptable scripts</h1>
         <p>As a user, ScriptDude helps you to download and update scripts easily. As a developer, ScriptDude offers you the possiblity to install your script with a single click and keep your users up to date with your latest innovations.</p>
         <br>
-        <p><a href="#installation"><b>Install ScriptDude</b></a><a href="https://scriptables.net" target="_blank"><i>Discover scripts on Scriptables.net ↗</i></a></p>
+        <p><a href="#installation"><b>Install ScriptDude</b></a><a href="https://scriptables.net" target="_blank"><i>Browse Scriptables.net ↗</i></a></p>
     </header>
-    
-    <main>
+
+    <header x-hide-home>
+        <h1>Install <span id="scriptName">Scriptname</span></h1>
+        <p>Welcome to ScriptDude. ScriptDude makes installing Scriptable scripts easy. If you have already installed a script with ScriptDude, just click the Install button. If this is your first time downloading with ScriptDude, please follow the Setup Instructions first.</p>
+        <p><a id="scriptdudeInstaller" href="scriptable:///run?scriptName=ScriptDude"><b>Install</b></a><a href="/#installation"><i>Setup Instructions</i></a></p>
+    </header>
+
+
+    <main x-hide-install>
         <hr>
         <section id="installation">
             <header>
@@ -49,12 +60,12 @@
             </header>
             <aside>
                 <h3>1. Install Scriptable</h3>
-                <p><a href="https://apps.apple.com/us/app/scriptable/id1405459188" target="_blank"><em>Download Scriptable ↗</em></a></p>
+                <p><a href="https://apps.apple.com/app/scriptable/id1405459188" target="_blank"><em>Download Scriptable ↗</em></a></p>
                 <p>If you have not downloaded Scriptable from the AppStore yet, please click on the download button below.</p>
             </aside>
             <aside>
                 <h3>2. Copy Installer Script</h3>
-                <p><a href="#" target="_blank"><em>Copy Installer</em></a></p>
+                <p><a href="#" target="_blank" id="copyInstaller"><em>Copy Installer</em></a></p>
                 <p>Copy our easy install script by clicking this button.</p>
             </aside>
             <aside>
@@ -78,6 +89,25 @@
             </details>
             
         </article>
+        <hr>
+        <section id="generator">
+            <header>
+            <h2>Link Generator</h2>
+            <p>The link generator is the core feature of ScriptDude, as it builds the bridge between the web and the scriptable app. Just enter your source url, documentation url and a name for your script and we will provide you with a shareable link that makes the installation of your script a breeze.</p>
+            </header>
+            <p>
+                <form>
+                    <label>Script name</label>
+                    <input type="text" name="name" placeholder="My fancy script">
+                    <label>Script source URL</label>
+                    <input type="text" name="source" placeholder="https://gist.githubusercontent.com/kevinkub/46caebfebc7e26be63403a7f0587f664/raw/incidence.js">
+                    <label>Script documentation URL</label>
+                    <input type="text" name="docs" placeholder="https://gist.github.com/kevinkub/46caebfebc7e26be63403a7f0587f664">
+                    <input type="submit" value="Generate Link">
+                </form>
+            </p>
+        </section>
+
         <hr>
         <article>
             <header>
