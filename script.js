@@ -45,6 +45,12 @@ class ScriptDude {
         this.getInstallationUI();
       }
       rows.push(manualInstall);
+      let scriptablesLink = new UITableRow();
+      let scriptablesLinkButton = scriptablesLink.addButton("Browse scriptables.net");
+      scriptablesLinkButton.onTap = () => {
+        Safari.open('https://scriptables.net/');
+      }
+      rows.push(scriptablesLink);
       return rows;
     }
     
