@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Checkmarks in installation
     [].slice.call(document.querySelectorAll('#installation a')).map(el => {
-        console.log(el);
         el.addEventListener("click", () => {
             if(el.innerHTML.indexOf('✅') == -1) el.innerHTML += ' ✅';
         });
