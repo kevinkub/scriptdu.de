@@ -1,12 +1,23 @@
 document.addEventListener('DOMContentLoaded', function() {
+
+    // Checkmarks in installation
+    [].slice.call(document.querySelectorAll('#installation a')).map(el => {
+        console.log(el);
+        el.addEventListener("click", () => {
+            if(el.innerHTML.indexOf('✅') == -1) el.innerHTML += ' ✅';
+        });
+    });
+
     // Copy install code
     let installCode;
     fetch('install.js').then(res => res.text()).then((source) => installCode = source);
-    document.querySelector('#copyInstaller').onclick = function() {
+    document.querySelector('#copyInstaller').addEventListener("click", function(event) {
         Clipboard.copy(installCode);
-        return false;
-    };
+        alert('The installation code has been copied to your pasteboard.');
+        event.preventDefault();
+    });
 
+    // Installation page
     if(document.location.search) {
         [].slice.call(document.querySelectorAll('[x-hide-install]')).map(el => el.style.display = 'none');
         query = parseQuery(document.location.search);
