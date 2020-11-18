@@ -1,7 +1,15 @@
+// This script was downloaded using ScriptDude.
+// Do not remove these lines, if you want to benefit from automatic updates.
+// source: https://scriptdu.de/script.js; docs: https://scriptdu.de/; hash: -1503760114;
+
 class ScriptDude {
   
     constructor(hoehe, breite) {
-      this.fileManager = FileManager.iCloud()
+      try {
+        this.fileManager = FileManager.iCloud()
+      } catch(e) {
+        this.fileManager = FileManager.local()
+      }
       this.documentsDirectory = this.fileManager.documentsDirectory()
       this.updateableScripts = [];
       this.uptodateScripts = [];
@@ -20,7 +28,18 @@ class ScriptDude {
         throw "Wrong script name";
       }
     }
-    
+       
+    makeUrlUpdateable(url) {
+      // Strip revision from gist
+      if(url.startsWith("https://gist.githubusercontent.com/")) {
+        let parts = url.split('/');
+        if(parts.length == 8) {
+          url = parts.filter((el, i) => i != 6).join('/');
+        }
+      }
+      return url;
+    }
+
     hashCode(input) {
       return Array.from(input).reduce((accumulator, currentChar) => Math.imul(31, accumulator) + currentChar.charCodeAt(0), 0)
     }
@@ -89,6 +108,7 @@ class ScriptDude {
     }
     
     async installScript(name, sourceUrl, documentationUrl, icon, color, showMessage) {
+      sourceUrl = this.makeUrlUpdateable(sourceUrl);
       let filePath = this.fileManager.joinPath(this.documentsDirectory, name + '.js');
       if(this.fileManager.fileExists(filePath)) {
         let error = new Alert();
@@ -109,7 +129,6 @@ class ScriptDude {
       }
       let req = new Request(sourceUrl);
       let code = await req.loadString();
-      console.log(code)
       let hash = this.hashCode(code);
       let codeToStore = Data.fromString(`// Variables used by Scriptable.\n// These must be at the very top of the file. Do not edit.\n// icon-color: ${color || 'blue'}; icon-glyph: ${icon || 'circle'};\n// This script was downloaded using ScriptDude.\n// Do not remove these lines, if you want to benefit from automatic updates.\n// source: ${sourceUrl}; docs: ${documentationUrl}; hash: ${hash};\n\n${code}`);
       this.fileManager.write(filePath, codeToStore);
@@ -136,12 +155,32 @@ class ScriptDude {
     }
     
     async run() {
-      this.ensureCorrectScriptNaming();
-      this.showLoadingIndicator();
-      await this.updateScriptsData();
-      this.render();
-      this.table.present(true);
-      this.checkForInstallationRequestFromWeb();
+      if(config.runsInWidget) {
+        await this.updateScriptsData();
+        Script.setWidget(this.getWidget())
+      } else {
+        this.ensureCorrectScriptNaming();
+        this.showLoadingIndicator();
+        await this.updateScriptsData();
+        this.render();
+        this.table.present(true);
+        this.checkForInstallationRequestFromWeb();
+      }
+    }
+    
+    getWidget() {
+      let list = new ListWidget();
+      let header = list.addText("🧑‍🚀 ScriptDude".toUpperCase());
+      header.font = Font.mediumSystemFont(13);
+      list.addSpacer();
+      let number = list.addText(this.updateableScripts.length+"");
+      number.font = Font.largeTitle();
+      number.rightAlignText();
+      let title = list.addText("Updates".toUpperCase());
+      title.font = Font.mediumSystemFont(13);
+      title.rightAlignText();
+      list.refreshAfterDate = new Date(Date.now() + 60*60*1000);
+      return list;
     }
     
     checkForInstallationRequestFromWeb() {
@@ -210,7 +249,7 @@ class ScriptDude {
                 }, {});
               if(!!customMetadata['source'] 
                 && !!customMetadata['hash']) {
-                file.source = customMetadata['source'];
+                file.source = this.makeUrlUpdateable(customMetadata['source']);
                 file.hash = customMetadata['hash'];
                 file.docs = customMetadata['docs'] || '';
               }
