@@ -23,6 +23,13 @@ document.addEventListener('DOMContentLoaded', function() {
         query = parseQuery(document.location.search);
         document.querySelector('#scriptName').innerText = query.name;
         document.querySelector('#scriptdudeInstaller').href += '&' + document.location.search.substr(1);
+        document.querySelector('#link').innerText = document.location.href;
+        document.querySelector('#markdown').innerText = '[![Download with ScriptDude](https://scriptdu.de/download.svg)]('+document.location.href+')';
+        let html = '<a href="'+document.location.href+'"><img alt="Download with ScriptDude" src="https://scriptdu.de/download.svg"></a>';
+        let safeHtml = '<a href="#" target="_blank"><img alt="Download with ScriptDude" src="https://scriptdu.de/download.svg"></a>';
+        document.querySelector('#html').innerText = html;
+        document.querySelector('#markdown-preview').innerHTML = safeHtml;
+        document.querySelector('#html-preview').innerHTML = safeHtml;
     } else {
         [].slice.call(document.querySelectorAll('[x-hide-home]')).map(el => el.style.display = 'none');
     }

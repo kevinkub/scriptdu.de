@@ -18,6 +18,10 @@
             --color-text: #000;
             --color-text-secondary: #999;
         }
+
+        video {
+            max-height: 100vh;
+        }
     </style>
     <script src="web-script.js"></script>
 </head>
@@ -37,12 +41,6 @@
             </ul>
         </nav>
     </header>
-    <header x-hide-install>
-    <h1>An <u>automatic</u> downloader and updater for Scriptable scripts</h1>
-        <p>As a user, ScriptDude helps you to download and update scripts easily. As a developer, ScriptDude offers you the possiblity to install your script with a single click and keep your users up to date with your latest innovations.</p>
-        <br>
-        <p><a href="#installation"><b>Install ScriptDude</b></a><a href="https://scriptables.net" target="_blank"><i>Browse Scriptables.net ↗</i></a></p>
-    </header>
 
     <header x-hide-home>
         <h1>Install <span id="scriptName">Scriptname</span></h1>
@@ -50,6 +48,36 @@
         <p><a id="scriptdudeInstaller" href="scriptable:///run?scriptName=ScriptDude"><b>Install</b></a><a href="/#installation"><i>Setup Instructions</i></a></p>
     </header>
 
+    <main x-hide-home>
+        <hr>
+        <section>
+            <header>
+                <h2>Share this script</h2>
+                <p>You can share this script by linking to this page.</p>
+            </header>
+            <aside>
+                <h3>Direct Link</h3>
+                <textarea id="link"></textarea>
+            </aside>
+            <aside>
+                <h3>Button (Markdown)</h3>
+                <textarea id="markdown"></textarea>
+                <div id="markdown-preview"></div>
+            </aside>
+            <aside>
+                <h3>Button (HTML)</h3>
+                <textarea id="html"></textarea>
+                <div id="html-preview"></div>
+            </aside>
+        </section>
+    </main>
+
+    <header x-hide-install>
+        <h1>An <u>automatic</u> downloader and updater for Scriptable scripts</h1>
+        <p>As a user, ScriptDude helps you to download and update scripts easily. As a developer, ScriptDude offers you the possiblity to install your script with a single click and keep your users up to date with your latest innovations.</p>
+        <br>
+        <p><a href="#installation"><b>Install ScriptDude</b></a><a href="https://scriptables.net" target="_blank"><i>Browse Scriptables.net ↗</i></a></p>
+    </header>
 
     <main x-hide-install>
         <hr>
@@ -73,6 +101,13 @@
                 <p><a href="scriptable:///add" target="_blank"><em>Open Scriptable</em></a></p>
                 <p>Open a new Scriptable script, paste the code and press run (▶).</p>
             </aside>
+            <footer>
+                <details><summary>View a demo video</summary>
+                    <video>
+                        <source src="demo.mp4">
+                    </video>
+                </details>
+            </footer>
         </section>
         <hr>
         <article id="faq">
