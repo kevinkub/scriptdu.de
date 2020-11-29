@@ -4,7 +4,7 @@
 
 class ScriptDude {
   
-    constructor(hoehe, breite) {
+    constructor() {
       try {
         this.fileManager = FileManager.iCloud()
       } catch(e) {
@@ -231,29 +231,32 @@ class ScriptDude {
         // Add source and origin metadata
         .map(file => {
           let potentialScriptData = file.content
-            .split("\n")
-            .filter(line => line.length != 0)
-            .map(line => line.trim())[5]
-            if(!!potentialScriptData && potentialScriptData.startsWith('//') 
-              && potentialScriptData.indexOf('source:') != -1 
-              && potentialScriptData.indexOf('hash:') != -1
-              && potentialScriptData.indexOf('docs:') != -1) {
-              let customMetadata = potentialScriptData
-                .substr(2)
-                .split(';')
-                .map(keyValue => keyValue.split(':').map(text => text.trim()))
-                .filter(keyValue => keyValue[0].length)
-                .reduce((dict, addable) => { 
-                  dict[addable.shift()] = addable.join(':');
-                  return dict;
-                }, {});
-              if(!!customMetadata['source'] 
-                && !!customMetadata['hash']) {
-                file.source = this.makeUrlUpdateable(customMetadata['source']);
-                file.hash = customMetadata['hash'];
-                file.docs = customMetadata['docs'] || '';
-              }
+            .split("\n", 50) // Scan first max. 50 lines
+            .filter(line => line.length != 0) // Skip empty lines
+            .filter(line => line.indexOf('//') != -1) // Take only comments
+            .map(line => line.substr(2).trim()) // Remove comment slashes
+            .filter(line => 
+              line.indexOf('source:') != -1 
+              && line.indexOf('hash:') != -1
+              && line.indexOf('docs:') != -1
+            );
+          if(!!potentialScriptData && potentialScriptData.length > 0) {
+            let customMetadata = potentialScriptData
+              .split(';')
+              .map(keyValue => keyValue.split(':').map(text => text.trim()))
+              .filter(keyValue => keyValue[0].length)
+              .reduce((dict, addable) => { 
+                dict[addable.shift()] = addable.join(':');
+                return dict;
+              }, {});
+            if(!!customMetadata['source'] 
+              && !!customMetadata['hash']) {
+              file.source = this.makeUrlUpdateable(customMetadata['source']);
+              file.hash = customMetadata['hash'];
+              file.docs = customMetadata['docs'] || '';
+              console.log(file);
             }
+          }
           return file
         })
         // Filter for scripts managed by Scriptstore
@@ -278,3 +281,4 @@ class ScriptDude {
   }
   
   await new ScriptDude().run();
+  Script.complete();
