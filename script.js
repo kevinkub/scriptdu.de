@@ -1,3 +1,6 @@
+// Variables used by Scriptable.
+// These must be at the very top of the file. Do not edit.
+// icon-color: deep-gray; icon-glyph: magic;
 // This script was downloaded using ScriptDude.
 // Do not remove these lines, if you want to benefit from automatic updates.
 // source: https://scriptdu.de/script.js; docs: https://scriptdu.de/; hash: -1503760114;
@@ -81,6 +84,30 @@ class ScriptDude {
       rows.push(header, ...scripts.map(this.getPackageUIRow.bind(this)), new UITableRow());
       return rows;
     }
+
+    separateScriptableHeader(code)
+    {
+      let scriptableHeader = ""; // detect Scriptable header
+      if (code.trim().startsWith('// Variables used by Scriptable'))
+      {
+        let lines = code.split("\n"); // HINT: to improve speed, we could use just the first 20 lines of the code -> code.split("\n", 20);
+        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+          const line = lines[lineIndex];
+          if (line.indexOf('// Variables used by Scriptable.') != -1
+            || line.indexOf('// These must be at the very top of the file') != -1
+            || line.match(/\/\/( [\w\-]*: [\w\-]*;)+/)) // Find "key: value;" list used by scriptable
+            scriptableHeader += line + "\n";
+          else
+            break;
+        }
+        code = code.substr(scriptableHeader.length); // Remove scriptable header from original code
+      }
+      else
+      {
+        scriptableHeader = `// Variables used by Scriptable.\n// These must be at the very top of the file. Do not edit.\n// icon-color: ${color || 'blue'}; icon-glyph: ${icon || 'circle'};\n`;
+      }
+      return [scriptableHeader, code];
+    }
     
     getPackageUIRow(script) {
       const iconWidth = 60;
@@ -128,12 +155,14 @@ class ScriptDude {
         }
       }
       let req = new Request(sourceUrl);
-      let code = await req.loadString();
-      let hash = this.hashCode(code);
-      let codeToStore = Data.fromString(`// Variables used by Scriptable.\n// These must be at the very top of the file. Do not edit.\n// icon-color: ${color || 'blue'}; icon-glyph: ${icon || 'circle'};\n// This script was downloaded using ScriptDude.\n// Do not remove these lines, if you want to benefit from automatic updates.\n// source: ${sourceUrl}; docs: ${documentationUrl}; hash: ${hash};\n\n${code}`);
+      let codeOriginal = await req.loadString();
+      let hash = this.hashCode(codeOriginal);
+      let [scriptableHeader, code] = this.separateScriptableHeader(codeOriginal);
+
+      let codeToStore = Data.fromString(`${scriptableHeader}// This script was downloaded using ScriptDude.\n// Do not remove these lines, if you want to benefit from automatic updates.\n// source: ${sourceUrl}; docs: ${documentationUrl}; hash: ${hash};\n\n${code}`);
       this.fileManager.write(filePath, codeToStore);
       this.showLoadingIndicator();
-      this.updateScriptsData().then(() => { this.render() })
+      this.updateScriptsData().then(() => { this.render() });
     }
     
     async getInstallationUI() {
@@ -154,7 +183,8 @@ class ScriptDude {
       }
     }
     
-    async run() {
+    async run()
+    {
       if(config.runsInWidget) {
         await this.updateScriptsData();
         Script.setWidget(this.getWidget())
@@ -203,9 +233,10 @@ class ScriptDude {
       this.table.reload();
     }
     
-    updateScript(script) {
-      let header = script.content.split("\n", 5).join("\n");
-      let codeToStore = Data.fromString(`${header}\n// source: ${script.source}; docs: ${script.docs}; hash: ${script.updatePayload.hash};\n\n${script.updatePayload.code}`);
+    updateScript(script)
+    {
+      let [scriptableHeader, code] = this.separateScriptableHeader(script.updatePayload.code);
+      let codeToStore = Data.fromString(`${scriptableHeader}// This script was downloaded using ScriptDude.\n// Do not remove these lines, if you want to benefit from automatic updates.\n// source: ${script.source}; docs: ${script.docs}; hash: ${script.updatePayload.hash};\n\n${code}`);
       this.fileManager.write(script.path, codeToStore);
       this.showLoadingIndicator();
       this.updateScriptsData().then(() => { this.render() })
@@ -241,7 +272,7 @@ class ScriptDude {
               && line.indexOf('docs:') != -1
             );
           if(!!potentialScriptData && potentialScriptData.length > 0) {
-            let customMetadata = potentialScriptData
+            let customMetadata = potentialScriptData[0]
               .split(';')
               .map(keyValue => keyValue.split(':').map(text => text.trim()))
               .filter(keyValue => keyValue[0].length)
@@ -257,7 +288,7 @@ class ScriptDude {
               console.log(file);
             }
           }
-          return file
+          return file;
         })
         // Filter for scripts managed by Scriptstore
         .filter(file => !!file.source && !!file.hash);
