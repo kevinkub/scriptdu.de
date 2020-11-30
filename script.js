@@ -85,30 +85,62 @@ class ScriptDude {
       return rows;
     }
 
-    separateScriptableHeader(code)
+    mergeHeaders(codeOld, codeNew)
     {
-      let scriptableHeader = ""; // detect Scriptable header
-      if (code.trim().startsWith('// Variables used by Scriptable'))
+      let icon = null, color = null;
+      
+      if (!!codeOld)
       {
-        let lines = code.split("\n"); // HINT: to improve speed, we could use just the first 20 lines of the code -> code.split("\n", 20);
+        let lines = codeOld.split("\n", 20);
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
           const line = lines[lineIndex];
-          if (line.indexOf('// Variables used by Scriptable.') != -1
-            || line.indexOf('// These must be at the very top of the file') != -1
-            || line.match(/\/\/( [\w\-]*: [\w\-]*;)+/)) // Find "key: value;" list used by scriptable
-            scriptableHeader += line + "\n";
-          else
+          let match = line.match(/icon-color: ([\w\-]*);/);
+          if (match)
+            color = match[1];
+          match = line.match(/icon-glyph: ([\w\-]*);/);
+          if (match)
+            icon = match[1];
+          if (icon != null && color != null)
             break;
         }
-        code = code.substr(scriptableHeader.length); // Remove scriptable header from original code
+      }
+
+      let scriptableHeader = ""; // detect Scriptable header
+      if (codeNew.trim().startsWith('// Variables used by Scriptable'))
+      {
+        let lines = codeNew.split("\n"); // HINT: to improve speed, we could use just the first 20 lines of the code -> code.split("\n", 20);
+        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+          let line = lines[lineIndex];
+          if (line.indexOf('// Variables used by Scriptable.') != -1 || line.indexOf('// These must be at the very top of the file') != -1)
+          {
+            scriptableHeader += line + "\n";
+            codeNew = codeNew.substr(line.length + 1); // Remove scriptable header from original code
+          }
+          else if (line.match(/\/\/( [\w\-]*: [\w\-]*;)+/)) // Find "key: value;" list used by scriptable
+          {
+            codeNew = codeNew.substr(line.length + 1); // Remove scriptable header from original code
+            let match = line.match(/icon-color: ([\w\-]*);/);
+            if (match)
+              line = line.replace(match[1], color);
+            match = line.match(/icon-glyph: ([\w\-]*);/);
+            if (match)
+              line = line.replace(match[1], icon);
+
+            scriptableHeader += line + "\n";
+          }
+          else
+          {
+            break;
+          }
+        }
       }
       else
       {
         scriptableHeader = `// Variables used by Scriptable.\n// These must be at the very top of the file. Do not edit.\n// icon-color: ${color || 'blue'}; icon-glyph: ${icon || 'circle'};\n`;
       }
-      return [scriptableHeader, code];
+      return [scriptableHeader, codeNew];
     }
-    
+
     getPackageUIRow(script) {
       const iconWidth = 60;
       let row = new UITableRow();
@@ -157,7 +189,7 @@ class ScriptDude {
       let req = new Request(sourceUrl);
       let codeOriginal = await req.loadString();
       let hash = this.hashCode(codeOriginal);
-      let [scriptableHeader, code] = this.separateScriptableHeader(codeOriginal);
+      let [scriptableHeader, code] = this.mergeHeaders(null, codeOriginal);
 
       let codeToStore = Data.fromString(`${scriptableHeader}// This script was downloaded using ScriptDude.\n// Do not remove these lines, if you want to benefit from automatic updates.\n// source: ${sourceUrl}; docs: ${documentationUrl}; hash: ${hash};\n\n${code}`);
       this.fileManager.write(filePath, codeToStore);
@@ -235,7 +267,7 @@ class ScriptDude {
     
     updateScript(script)
     {
-      let [scriptableHeader, code] = this.separateScriptableHeader(script.updatePayload.code);
+      let [scriptableHeader, code] = this.mergeHeaders(script.content, script.updatePayload.code);
       let codeToStore = Data.fromString(`${scriptableHeader}// This script was downloaded using ScriptDude.\n// Do not remove these lines, if you want to benefit from automatic updates.\n// source: ${script.source}; docs: ${script.docs}; hash: ${script.updatePayload.hash};\n\n${code}`);
       this.fileManager.write(script.path, codeToStore);
       this.showLoadingIndicator();
@@ -285,7 +317,6 @@ class ScriptDude {
               file.source = this.makeUrlUpdateable(customMetadata['source']);
               file.hash = customMetadata['hash'];
               file.docs = customMetadata['docs'] || '';
-              console.log(file);
             }
           }
           return file;
