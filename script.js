@@ -1,10 +1,13 @@
+// Variables used by Scriptable.
+// These must be at the very top of the file. Do not edit.
+// icon-color: deep-gray; icon-glyph: magic;
 // This script was downloaded using ScriptDude.
 // Do not remove these lines, if you want to benefit from automatic updates.
 // source: https://scriptdu.de/script.js; docs: https://scriptdu.de/; hash: -1503760114;
 
 class ScriptDude {
   
-    constructor(hoehe, breite) {
+    constructor() {
       try {
         this.fileManager = FileManager.iCloud()
       } catch(e) {
@@ -81,7 +84,63 @@ class ScriptDude {
       rows.push(header, ...scripts.map(this.getPackageUIRow.bind(this)), new UITableRow());
       return rows;
     }
-    
+
+    mergeHeaders(codeOld, codeNew)
+    {
+      let icon = null, color = null;
+      
+      if (!!codeOld)
+      {
+        let lines = codeOld.split("\n", 20);
+        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+          const line = lines[lineIndex];
+          let match = line.match(/icon-color: ([\w\-]*);/);
+          if (match)
+            color = match[1];
+          match = line.match(/icon-glyph: ([\w\-]*);/);
+          if (match)
+            icon = match[1];
+          if (icon != null && color != null)
+            break;
+        }
+      }
+
+      let scriptableHeader = ""; // detect Scriptable header
+      if (codeNew.trim().startsWith('// Variables used by Scriptable'))
+      {
+        let lines = codeNew.split("\n"); // HINT: to improve speed, we could use just the first 20 lines of the code -> code.split("\n", 20);
+        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+          let line = lines[lineIndex];
+          if (line.indexOf('// Variables used by Scriptable.') != -1 || line.indexOf('// These must be at the very top of the file') != -1)
+          {
+            scriptableHeader += line + "\n";
+            codeNew = codeNew.substr(line.length + 1); // Remove scriptable header from original code
+          }
+          else if (line.match(/\/\/( [\w\-]*: [\w\-]*;)+/)) // Find "key: value;" list used by scriptable
+          {
+            codeNew = codeNew.substr(line.length + 1); // Remove scriptable header from original code
+            let match = line.match(/icon-color: ([\w\-]*);/);
+            if (match)
+              line = line.replace(match[1], color);
+            match = line.match(/icon-glyph: ([\w\-]*);/);
+            if (match)
+              line = line.replace(match[1], icon);
+
+            scriptableHeader += line + "\n";
+          }
+          else
+          {
+            break;
+          }
+        }
+      }
+      else
+      {
+        scriptableHeader = `// Variables used by Scriptable.\n// These must be at the very top of the file. Do not edit.\n// icon-color: ${color || 'blue'}; icon-glyph: ${icon || 'circle'};\n`;
+      }
+      return [scriptableHeader, codeNew];
+    }
+
     getPackageUIRow(script) {
       const iconWidth = 60;
       let row = new UITableRow();
@@ -128,12 +187,14 @@ class ScriptDude {
         }
       }
       let req = new Request(sourceUrl);
-      let code = await req.loadString();
-      let hash = this.hashCode(code);
-      let codeToStore = Data.fromString(`// Variables used by Scriptable.\n// These must be at the very top of the file. Do not edit.\n// icon-color: ${color || 'blue'}; icon-glyph: ${icon || 'circle'};\n// This script was downloaded using ScriptDude.\n// Do not remove these lines, if you want to benefit from automatic updates.\n// source: ${sourceUrl}; docs: ${documentationUrl}; hash: ${hash};\n\n${code}`);
+      let codeOriginal = await req.loadString();
+      let hash = this.hashCode(codeOriginal);
+      let [scriptableHeader, code] = this.mergeHeaders(null, codeOriginal);
+
+      let codeToStore = Data.fromString(`${scriptableHeader}// This script was downloaded using ScriptDude.\n// Do not remove these lines, if you want to benefit from automatic updates.\n// source: ${sourceUrl}; docs: ${documentationUrl}; hash: ${hash};\n\n${code}`);
       this.fileManager.write(filePath, codeToStore);
       this.showLoadingIndicator();
-      this.updateScriptsData().then(() => { this.render() })
+      this.updateScriptsData().then(() => { this.render() });
     }
     
     async getInstallationUI() {
@@ -154,7 +215,8 @@ class ScriptDude {
       }
     }
     
-    async run() {
+    async run()
+    {
       if(config.runsInWidget) {
         await this.updateScriptsData();
         Script.setWidget(this.getWidget())
@@ -203,9 +265,10 @@ class ScriptDude {
       this.table.reload();
     }
     
-    updateScript(script) {
-      let header = script.content.split("\n", 5).join("\n");
-      let codeToStore = Data.fromString(`${header}\n// source: ${script.source}; docs: ${script.docs}; hash: ${script.updatePayload.hash};\n\n${script.updatePayload.code}`);
+    updateScript(script)
+    {
+      let [scriptableHeader, code] = this.mergeHeaders(script.content, script.updatePayload.code);
+      let codeToStore = Data.fromString(`${scriptableHeader}// This script was downloaded using ScriptDude.\n// Do not remove these lines, if you want to benefit from automatic updates.\n// source: ${script.source}; docs: ${script.docs}; hash: ${script.updatePayload.hash};\n\n${code}`);
       this.fileManager.write(script.path, codeToStore);
       this.showLoadingIndicator();
       this.updateScriptsData().then(() => { this.render() })
@@ -231,30 +294,32 @@ class ScriptDude {
         // Add source and origin metadata
         .map(file => {
           let potentialScriptData = file.content
-            .split("\n")
-            .filter(line => line.length != 0)
-            .map(line => line.trim())[5]
-            if(!!potentialScriptData && potentialScriptData.startsWith('//') 
-              && potentialScriptData.indexOf('source:') != -1 
-              && potentialScriptData.indexOf('hash:') != -1
-              && potentialScriptData.indexOf('docs:') != -1) {
-              let customMetadata = potentialScriptData
-                .substr(2)
-                .split(';')
-                .map(keyValue => keyValue.split(':').map(text => text.trim()))
-                .filter(keyValue => keyValue[0].length)
-                .reduce((dict, addable) => { 
-                  dict[addable.shift()] = addable.join(':');
-                  return dict;
-                }, {});
-              if(!!customMetadata['source'] 
-                && !!customMetadata['hash']) {
-                file.source = this.makeUrlUpdateable(customMetadata['source']);
-                file.hash = customMetadata['hash'];
-                file.docs = customMetadata['docs'] || '';
-              }
+            .split("\n", 50) // Scan first max. 50 lines
+            .filter(line => line.length != 0) // Skip empty lines
+            .filter(line => line.indexOf('//') != -1) // Take only comments
+            .map(line => line.substr(2).trim()) // Remove comment slashes
+            .filter(line => 
+              line.indexOf('source:') != -1 
+              && line.indexOf('hash:') != -1
+              && line.indexOf('docs:') != -1
+            );
+          if(!!potentialScriptData && potentialScriptData.length > 0) {
+            let customMetadata = potentialScriptData[0]
+              .split(';')
+              .map(keyValue => keyValue.split(':').map(text => text.trim()))
+              .filter(keyValue => keyValue[0].length)
+              .reduce((dict, addable) => { 
+                dict[addable.shift()] = addable.join(':');
+                return dict;
+              }, {});
+            if(!!customMetadata['source'] 
+              && !!customMetadata['hash']) {
+              file.source = this.makeUrlUpdateable(customMetadata['source']);
+              file.hash = customMetadata['hash'];
+              file.docs = customMetadata['docs'] || '';
             }
-          return file
+          }
+          return file;
         })
         // Filter for scripts managed by Scriptstore
         .filter(file => !!file.source && !!file.hash);
@@ -278,3 +343,4 @@ class ScriptDude {
   }
   
   await new ScriptDude().run();
+  Script.complete();
