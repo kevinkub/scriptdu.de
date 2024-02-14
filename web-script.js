@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
 
     // Checkmarks in installation
     [].slice.call(document.querySelectorAll('#installation a')).map(el => {
@@ -9,27 +9,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Copy install code
     let installCode;
-    fetch('install.js').then(res => res.text()).then((source) => installCode = source);
-    document.querySelector('#copyInstaller').addEventListener("click", function(event) {
-        Clipboard.copy(installCode);
-        alert('The installation code has been copied to your pasteboard.');
-        event.preventDefault();
-    });
-
+    await fetch('install.js').then(res => res.text()).then((source) => installCode = source);
+    setupCopyListener('#copyInstaller', installCode, "The installation code has been copied to your pasteboard.");
+    
     // Installation page
     if(document.location.search) {
         [].slice.call(document.querySelectorAll('[x-hide-install]')).map(el => el.style.display = 'none');
         query = parseQuery(document.location.search);
+        
+        document.querySelector('#scriptName').innerText = query.name;
+
         const pageOrigin = new URL(document.location.href).origin;
         const pageUrl = appendParamsToUrl(pageOrigin, query);
+
         const pageQuery = pageUrl.replace(`${pageOrigin}?`, '');
-        document.querySelector('#scriptName').innerText = query.name;
-        document.querySelector('#scriptdudeInstaller').href += `&${pageQuery}`;
-        document.querySelector('#link').innerText = pageUrl;
-        document.querySelector('#markdown').innerText = '[![Download with ScriptDude](https://scriptdu.de/download.svg)]('+pageUrl+')';
-        let html = '<a href="'+pageUrl+'"><img alt="Download with ScriptDude" src="https://scriptdu.de/download.svg"></a>';
-        let safeHtml = '<a href="#" target="_blank"><img alt="Download with ScriptDude" src="https://scriptdu.de/download.svg"></a>';
+        document.querySelector('#scriptdudeInstaller').href += '&' + pageQuery;
+
+        const directLink = (document.querySelector('#link').innerText = pageUrl);
+        setupCopyListener('#copyLinkToDirectLink', directLink, "The link has been copied to your pasteboard.");
+
+        const markdown = `[![Download with ScriptDude](https://scriptdu.de/download.svg)](${pageUrl})`;
+        document.querySelector('#markdown').innerText = markdown;
+        setupCopyListener('#copyLinkToButtonMarkdown', markdown, "Markdown has been copied to your pasteboard.");
+        
+        const html = `<a href="${pageUrl}"><img alt="Download with ScriptDude" src="https://scriptdu.de/download.svg"></a>`;
+        const safeHtml = '<a href="#" target="_blank"><img alt="Download with ScriptDude" src="https://scriptdu.de/download.svg"></a>';
         document.querySelector('#html').innerText = html;
+        setupCopyListener('#copyLinkToButtonHtml', html, "HTML link has been copied to your pasteboard.");
+        
         document.querySelector('#markdown-preview').innerHTML = safeHtml;
         document.querySelector('#html-preview').innerHTML = safeHtml;
     } else {
@@ -37,6 +44,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 }, false);
+
+function setupCopyListener(selector, copyValue, alertMessage) {
+    document.querySelector(selector).addEventListener('click', (event) => {
+        Clipboard.copy(copyValue);
+        if (alertMessage) alert(alertMessage);
+        event.preventDefault();
+    });
+}
 
 function appendParamsToUrl(baseUrl, queryParameters) {
     const queryString = Object.entries(queryParameters)
