@@ -20,11 +20,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if(document.location.search) {
         [].slice.call(document.querySelectorAll('[x-hide-install]')).map(el => el.style.display = 'none');
         query = parseQuery(document.location.search);
+        const pageOrigin = new URL(document.location.href).origin;
+        const pageUrl = appendParamsToUrl(pageOrigin, query);
         document.querySelector('#scriptName').innerText = query.name;
         document.querySelector('#scriptdudeInstaller').href += '&' + document.location.search.substr(1);
-        document.querySelector('#link').innerText = document.location.href;
-        document.querySelector('#markdown').innerText = '[![Download with ScriptDude](https://scriptdu.de/download.svg)]('+document.location.href+')';
-        let html = '<a href="'+document.location.href+'"><img alt="Download with ScriptDude" src="https://scriptdu.de/download.svg"></a>';
+        document.querySelector('#link').innerText = pageUrl;
+        document.querySelector('#markdown').innerText = '[![Download with ScriptDude](https://scriptdu.de/download.svg)]('+pageUrl+')';
+        let html = '<a href="'+pageUrl+'"><img alt="Download with ScriptDude" src="https://scriptdu.de/download.svg"></a>';
         let safeHtml = '<a href="#" target="_blank"><img alt="Download with ScriptDude" src="https://scriptdu.de/download.svg"></a>';
         document.querySelector('#html').innerText = html;
         document.querySelector('#markdown-preview').innerHTML = safeHtml;
@@ -34,6 +36,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 }, false);
+
+function appendParamsToUrl(baseUrl, queryParameters) {
+    const queryString = Object.entries(queryParameters)
+        .map((parameter) => {
+            const [key, value] = parameter;
+            let encodedValue = encodeURIComponent(value);
+            if (key === "name") encodedValue.replace("+", "%20");
+            return `${encodeURIComponent(key)}=${encodedValue}`;
+        })
+        .join("&");
+    return `${baseUrl}?${queryString}`;
+}
 
 // Code from https://stackoverflow.com/a/13419367
 function parseQuery(queryString) {
