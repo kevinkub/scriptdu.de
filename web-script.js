@@ -46,10 +46,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 function addCheckmarkToLinks(selector) {
     const links = document.querySelectorAll(selector);
-    links.forEach(function (el) {
-        el.addEventListener('click', function () {
-            if (el.innerHTML.indexOf('✅') === -1) {
-                el.innerHTML += ' ✅';
+    links.forEach((el) => {
+        el.addEventListener('click', () => {
+            const emChild = el.querySelector('em');
+            if (emChild) {
+                if (!emChild.innerHTML.includes('✅')) {
+                    emChild.innerHTML += ' <span class="no-italic">✅</span>';
+                }
             }
         });
     });
