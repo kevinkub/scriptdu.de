@@ -1,11 +1,7 @@
 document.addEventListener('DOMContentLoaded', async function() {
 
     // Checkmarks in installation
-    [].slice.call(document.querySelectorAll('#installation a')).map(el => {
-        el.addEventListener("click", () => {
-            if(el.innerHTML.indexOf('✅') == -1) el.innerHTML += ' ✅';
-        });
-    });
+    addCheckmarkToLinks('#installation a')
 
     // Copy install code
     let installCode;
@@ -27,16 +23,19 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         const directLink = (document.querySelector('#link').innerText = pageUrl);
         setupCopyListener('#copyLinkToDirectLink', directLink, "The link has been copied to your pasteboard.");
+        addCheckmarkToLinks('#copyLinkToDirectLink')
 
         const markdown = `[![Download with ScriptDude](https://scriptdu.de/download.svg)](${pageUrl})`;
         document.querySelector('#markdown').innerText = markdown;
         setupCopyListener('#copyLinkToButtonMarkdown', markdown, "Markdown has been copied to your pasteboard.");
+        addCheckmarkToLinks('#copyLinkToButtonMarkdown')
         
         const html = `<a href="${pageUrl}"><img alt="Download with ScriptDude" src="https://scriptdu.de/download.svg"></a>`;
         const safeHtml = '<a href="#" target="_blank"><img alt="Download with ScriptDude" src="https://scriptdu.de/download.svg"></a>';
         document.querySelector('#html').innerText = html;
         setupCopyListener('#copyLinkToButtonHtml', html, "HTML link has been copied to your pasteboard.");
-        
+        addCheckmarkToLinks('#copyLinkToButtonHtml')
+
         document.querySelector('#markdown-preview').innerHTML = safeHtml;
         document.querySelector('#html-preview').innerHTML = safeHtml;
     } else {
@@ -44,6 +43,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
 }, false);
+
+function addCheckmarkToLinks(selector) {
+    const links = document.querySelectorAll(selector);
+    console.log(links)
+    links.forEach(function (el) {
+        el.addEventListener('click', function () {
+            if (el.innerHTML.indexOf('✅') === -1) {
+                el.innerHTML += ' ✅';
+            }
+        });
+    });
+}
 
 function setupCopyListener(selector, copyValue, alertMessage) {
     document.querySelector(selector).addEventListener('click', (event) => {
