@@ -22,8 +22,9 @@ document.addEventListener('DOMContentLoaded', function() {
         query = parseQuery(document.location.search);
         const pageOrigin = new URL(document.location.href).origin;
         const pageUrl = appendParamsToUrl(pageOrigin, query);
+        const pageQuery = pageUrl.replace(`${pageOrigin}?`, '');
         document.querySelector('#scriptName').innerText = query.name;
-        document.querySelector('#scriptdudeInstaller').href += '&' + document.location.search.substr(1);
+        document.querySelector('#scriptdudeInstaller').href += `&${pageQuery}`;
         document.querySelector('#link').innerText = pageUrl;
         document.querySelector('#markdown').innerText = '[![Download with ScriptDude](https://scriptdu.de/download.svg)]('+pageUrl+')';
         let html = '<a href="'+pageUrl+'"><img alt="Download with ScriptDude" src="https://scriptdu.de/download.svg"></a>';
