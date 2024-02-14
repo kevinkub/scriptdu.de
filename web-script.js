@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 function addCheckmarkToLinks(selector) {
     const links = document.querySelectorAll(selector);
-    console.log(links)
     links.forEach(function (el) {
         el.addEventListener('click', function () {
             if (el.innerHTML.indexOf('✅') === -1) {
