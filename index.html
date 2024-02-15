@@ -57,16 +57,21 @@
             </header>
             <aside>
                 <h3>Direct Link</h3>
-                <textarea id="link"></textarea>
+                <textarea id="link" disabled=true></textarea>
+                <p><a href="#" id="copyLinkToDirectLink"><em>Copy Link</em></a></p>
             </aside>
             <aside>
                 <h3>Button (Markdown)</h3>
-                <textarea id="markdown"></textarea>
+                <textarea id="markdown" disabled=true></textarea>
+                <p><a href="#" id="copyLinkToButtonMarkdown"><em>Copy Link</em></a></p>
+                <h4>Preview</h4>
                 <div id="markdown-preview"></div>
             </aside>
             <aside>
                 <h3>Button (HTML)</h3>
-                <textarea id="html"></textarea>
+                <textarea id="html" disabled=true></textarea>
+                <p><a href="#" id="copyLinkToButtonHtml"><em>Copy Link</em></a></p>
+                <h4>Preview</h4>
                 <div id="html-preview"></div>
             </aside>
         </section>
@@ -101,9 +106,13 @@
                 <p><a href="scriptable:///add" target="_blank"><em>Open Scriptable</em></a></p>
                 <p>Open a new Scriptable script, paste the code and press run (▶).</p>
             </aside>
-            <footer>
-               <a href="demo.mp4">View a demo video</a>
-            </footer>
+            <aside>
+                <h3>Demo Video</h3>
+                <video id="demoVideo" controls title="Demo Video" poster="demo.png">
+                    <source src="demo.mp4" type="video/mp4">
+                    <a href="demo.mp4">View a demo video</a>
+                </video>
+            </aside>
         </section>
         <hr>
         <article id="faq">
