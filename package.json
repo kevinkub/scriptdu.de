@@ -1,0 +1,24 @@
+{
+	"name": "scriptdu.de",
+	"version": "1.0.0",
+	"description": "🧑‍🚀 ScriptDude is a downloader and updater for Scriptable scripts.",
+	"scripts": {
+		"format": "prettier --write \"./**/*.{css,html,ts,js,json}\""
+	},
+	"keywords": [
+		"scriptable",
+		"iOS",
+		"MacOS",
+		"automation"
+	],
+	"author": "kevinkub",
+	"license": "MIT",
+	"homepage": "https://scriptdu.de/",
+	"bugs": {
+		"url": "https://github.com/kevinkub/scriptdu.de/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/kevinkub/scriptdu.de.git"
+	}
+}
